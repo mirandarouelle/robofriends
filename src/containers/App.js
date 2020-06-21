@@ -5,41 +5,49 @@ import SearchBox from '../components/SearchBox';
 import Scroll from '../components/Scroll';
 import ErrorBoundary from '../components/ErrorBoundary';
 import './App.css';
-import { setSearchField } from '../actions';
+import { setSearchField, requestRobots } from '../actions';
 import { connect } from 'react-redux';
 
 const mapStateToProps = state => {
     return {
-      searchField: state.searchField
+      searchField: state.searchRobots.searchField,
+      robots: state.requestRobots.robots,
+      isPending: state.requestRobots.isPending,
+      error: state.requestRobots.error
     }
 }
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onSearchChange: (event) => dispatch(setSearchField(event.target.value))
+    onSearchChange: (event) => dispatch(setSearchField(event.target.value)),
+    onRequestRobots: () => dispatch(requestRobots())
   }
 }
 
 class App extends Component{
-  constructor(){
-    super();
-    this.state = {
-      robots: []
-      //removed below due to redux change
-      // robots: [],
-      // searchField: ''
-    }
-    //console.log('Constructor');
-  }
+  //removed below due to redux change
+  // constructor(){
+  //   super();
+  //   this.state = {
+  //
+  //     // robots: [],
+  //     // searchField: ''
+  //   }
+  //   //console.log('Constructor');
+  // }
 
   componentDidMount(){
-      fetch('https://jsonplaceholder.typicode.com/users')
-        .then(response => response.json())
-        .then(users => this.setState({robots: users}));
-
-      //this.setState({robots: robots});
-      //console.log('componentDidMount');
+    this.props.onRequestRobots();
   }
+  // Removed due to react-redux/thunk
+  // componentDidMount(){
+  //     fetch('https://jsonplaceholder.typicode.com/users')
+  //       .then(response => response.json())
+  //       .then(users => this.setState({robots: users}));
+  //
+  //     //this.setState({robots: robots});
+  //     //console.log('componentDidMount');
+  // }
 
   // Removed due to react-redux
   // onSearchChange = (event) => {
@@ -48,13 +56,13 @@ class App extends Component{
 
 
   render(){
-    const { robots } = this.state;
-    const {searchField, onSearchChange} = this.props;
+    // const { robots } = this.state;
+    const {searchField, onSearchChange, robots, isPending} = this.props;
     const filteredRobots = robots.filter(robot =>  {
         return robot.name.toLowerCase().includes(searchField.toLowerCase())
     })
     //console.log('render');
-    return !robots.length ?
+    return isPending ?
       (<h1>Loading</h1>) :
       (
         <div className='tc'>
@@ -68,7 +76,6 @@ class App extends Component{
         </div>
       )
   };
-
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);
